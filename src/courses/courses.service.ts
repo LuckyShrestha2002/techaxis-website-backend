@@ -1,42 +1,51 @@
-// src/courses/courses.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common'; // <<< Add NotFoundException
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Course } from './course.entity';
-import { CreateCourseDto } from './create-course.dto'; // <<< Import the DTO
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateCourseDto } from './dto/create-course.dto';
+import { UpdateCourseDto } from './dto/update-course.dto';
+import { Course } from './entities/course.entity';
 
 @Injectable()
 export class CoursesService {
-  constructor(
-    @InjectRepository(Course)
-    private coursesRepository: Repository<Course>,
-  ) {}
+  private courses: Course[] = [
+    { id: 1, name: 'DevOps Training', description: 'This course covers the essentials of DevOps practices, including CI/CD, automation, and infrastructure as code.', imageUrl: 'https://cdn.iconscout.com/icon/premium/png-512-thumb/devops-2-632000.png?f=webp&w=256', price: 99.99, duration: '3 Months', instructor: 'John Doe' },
+    { id: 3, name: 'Cloud Computing', description: 'Learn how to leverage cloud services from providers like AWS, Azure, and Google Cloud to build scalable and reliable applications.', imageUrl: 'https://cdn.iconscout.com/icon/premium/png-512-thumb/cloud-computing-2035310-1721867.png?f=webp&w=256', price: 149.99, duration: '6 Months', instructor: 'Jane Smith' },
+  ];
+  private nextId = 4;
 
-  findAll(): Promise<Course[]> {
-    return this.coursesRepository.find();
+  create(createCourseDto: CreateCourseDto): Course {
+    const newCourse = {
+      id: this.nextId++,
+      ...createCourseDto,
+    };
+    this.courses.push(newCourse);
+    return newCourse;
   }
 
-  findOne(id: number): Promise<Course | null> {
-    return this.coursesRepository.findOneBy({ id });
+  findAll(): Course[] {
+    return this.courses;
   }
 
-  async create(courseData: CreateCourseDto): Promise<Course> { // <<< Use the DTO here
-    const newCourse = this.coursesRepository.create(courseData);
-    return this.coursesRepository.save(newCourse);
-  }
-
-  // <<< Add the update method
-  async update(id: number, updateData: Partial<CreateCourseDto>): Promise<Course> {
-    await this.coursesRepository.update(id, updateData);
-    const updatedCourse = await this.coursesRepository.findOneBy({ id });
-    if (!updatedCourse) {
-      throw new NotFoundException('Course not found');
+  findOne(id: number): Course {
+    const course = this.courses.find(course => course.id === id);
+    if (!course) {
+      throw new NotFoundException(`Course with ID "${id}" not found`);
     }
-    return updatedCourse;
+    return course;
   }
 
-  // <<< Add the remove method
-  async remove(id: number): Promise<void> {
-    await this.coursesRepository.delete(id);
+  update(id: number, updateCourseDto: UpdateCourseDto): Course {
+    const courseIndex = this.courses.findIndex(course => course.id === id);
+    if (courseIndex === -1) {
+      throw new NotFoundException(`Course with ID "${id}" not found`);
+    }
+    this.courses[courseIndex] = { ...this.courses[courseIndex], ...updateCourseDto };
+    return this.courses[courseIndex];
+  }
+
+  remove(id: number): void {
+    const initialLength = this.courses.length;
+    this.courses = this.courses.filter(course => course.id !== id);
+    if (this.courses.length === initialLength) {
+      throw new NotFoundException(`Course with ID "${id}" not found`);
+    }
   }
 }
