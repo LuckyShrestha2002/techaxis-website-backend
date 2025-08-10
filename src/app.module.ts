@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoursesModule } from './courses/courses.module';
+import { Course } from './courses/entities/course.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: '127.0.0.1',
       port: 3306,
-      username: 'myuser',
-      password: 'luckypassword',
+      username: 'myuser', 
+      password: 'myuser123', 
       database: 'techaxis',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      entities: [Course],
+      synchronize: false, 
     }),
-    CoursesModule,
+    CoursesModule,    
   ],
   controllers: [],
   providers: [],
