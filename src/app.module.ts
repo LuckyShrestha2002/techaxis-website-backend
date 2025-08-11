@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoursesModule } from './courses/courses.module';
 import { Course } from './courses/entities/course.entity';
+import { MailerService } from './mailer/mailer.service';
+import { EnquiryController } from './enquiry/enquiry.controller';
+
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: '127.0.0.1',
@@ -17,7 +22,12 @@ import { Course } from './courses/entities/course.entity';
     }),
     CoursesModule,    
   ],
-  controllers: [],
-  providers: [],
+  controllers: [
+    EnquiryController
+  ],
+  providers: [
+    MailerService, 
+    // Remove CoursesService from here
+  ],
 })
 export class AppModule {}
